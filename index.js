@@ -36,27 +36,30 @@ module.exports = (({fromCharCode}) => {
         return helper(fmt, bytes)[0];
     }
 
-    function write(fmt, data, bytes) {
-        if (fmt instanceof String) {
-            return bytes + data.padEnd(fmt.size, fromCharCode(0));
-        } else if (fmt instanceof Number) {
-            const byteMask = (1 << 8) - 1;
-            for (let n = 0 ; n < fmt.size; n++) {
-                const shift = fmt.bigEndian ? fmt.size - n - 1 : n;
-                let byte = data >> (shift * 8) & byteMask;
-                if (fmt.size - 1 === shift && fmt.signed) {
-                    byte += 0b10000000;
+    function write(fmt, data) {
+        const helper = (fmt, data, bytes) => {
+            if (fmt instanceof String) {
+                return bytes + data.padEnd(fmt.size, fromCharCode(0));
+            } else if (fmt instanceof Number) {
+                const byteMask = (1 << 8) - 1;
+                for (let n = 0 ; n < fmt.size; n++) {
+                    const shift = fmt.bigEndian ? fmt.size - n - 1 : n;
+                    let byte = data >> (shift * 8) & byteMask;
+                    if (fmt.size - 1 === shift && fmt.signed) {
+                        byte += 0b10000000;
+                    }
+                    bytes += fromCharCode(byte);
                 }
-                bytes += fromCharCode(byte);
+                return bytes;
+                    
+            } else if (fmt instanceof Struct) {
+                for (const [key, fmt2] of Object.entries(fmt.props)) {
+                    bytes += helper(fmt2, data[key], "");
+                }
+                return bytes;
             }
-            return bytes;
-                
-        } else if (fmt instanceof Struct) {
-            for (const [key, fmt2] of Object.entries(fmt.props)) {
-                bytes += write(fmt2, data[key], "");
-            }
-            return bytes;
-        }
+        };
+        return helper(fmt, data, "");
     }
 
     function String(size) {
