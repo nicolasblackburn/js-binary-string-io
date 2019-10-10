@@ -11,7 +11,7 @@ module.exports = (({fromCharCode}) => {
           const index = fmt.bigEndian ? 
             n : fmt.size - n - 1;
           let byte = bytes.charCodeAt(index);
-          if (0 === index && fmt.signed) {
+          if (0 === n && fmt.signed) {
             sign = 0b10000000 & byte;
             byte = 0b1111111 & byte;
           }

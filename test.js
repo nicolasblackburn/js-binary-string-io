@@ -68,15 +68,29 @@ const bytes = require("./index.js");
 })();
 
 (() => {
-  const {log} = console;
   const n = -1032;
   const fmt = bytes.Number(2, true, true);
   const out = bytes.write(fmt, n);
-  //log((-1*n).toString(2).padStart(16, "0"));
-  //log(out.charCodeAt(0).toString(2).padStart(8, "0"));
-  //log(out.charCodeAt(1).toString(2).padStart(8, "0"))
   assert.equal(out.charCodeAt(0), 132);
   assert.equal(out.charCodeAt(1), 8);
+  assert.equal(bytes.read(fmt, out), n);
+})();
+
+(() => {
+  const n = 1032;
+  const fmt = bytes.Number(2, true, false);
+  const out = bytes.write(fmt, n);
+  assert.equal(out.charCodeAt(1), 4);
+  assert.equal(out.charCodeAt(0), 8);
+  assert.equal(bytes.read(fmt, out), n);
+})();
+
+(() => {
+  const n = -1032;
+  const fmt = bytes.Number(2, true, false);
+  const out = bytes.write(fmt, n);
+  assert.equal(out.charCodeAt(1), 132);
+  assert.equal(out.charCodeAt(0), 8);
   assert.equal(bytes.read(fmt, out), n);
 })();
 
