@@ -2,10 +2,10 @@ const assert = require("assert");
 const bytes = require("./index.js");
 
 (() => {
-  const fmt = bytes.Struct({
+  const fmt = bytes.Object({
     name: bytes.String(10),
     age: bytes.String(3),
-    book: bytes.Struct({
+    book: bytes.Object({
       type: bytes.String(10),
       title: bytes.String(10)
     })
@@ -25,6 +25,20 @@ const bytes = require("./index.js");
                "Nicolas   37 comics    Black Hole"), 
     data);
 })();
+
+(() => {
+  const arr = [41, 42, 43, 44];
+  const fmt = bytes.Array(
+    4,
+    bytes.Number(2, false, false));
+  const out = bytes.write(fmt, arr);
+  //const inp = bytes.read(fmt, out);
+  const {log} = console;
+  //log(out);
+  //assert.deepEqual(inp, arr);
+})();
+
+return;
 
 (() => {
   const fmt = bytes.Number(2, false, true);

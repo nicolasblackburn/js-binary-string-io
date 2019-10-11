@@ -1,4 +1,13 @@
-module.exports = (({fromCharCode}) => {
+module.exports = (({fromCharCode}, {entries}) => {
+  function btos(size, bigEndian, bytes) {
+    return bytes
+      .split("")
+      .map(b =>
+        b.charCodeAt(0).toString(2)[
+          bigEndian ? "padStart" : "padEnd"](
+            size * 8, "0")
+      );
+  }
   function read(fmt, bytes) {
     const helper = (fmt, bytes) => {
       if (fmt instanceof String) {
@@ -25,11 +34,21 @@ module.exports = (({fromCharCode}) => {
 
         return [value, bytes.slice(fmt.size)];
 
-      } else if (fmt instanceof Struct) {
+      } else if (fmt instanceof Array) {
+        let value = [];
+        for (let n = 0; n < fmt.size; n++) {
+          value.push(
+            helper(fmt.kind, 
+                 bytes.slice(0, fmt.kind.size)));
+          bytes = bytes.slice(fmt.kind.size);
+        }
+        return value;
+
+      } else if (fmt instanceof Object) {
         const value = {};
         let bytes2 = bytes;
         for (const [key, fmt2] of 
-          Object.entries(fmt.props)) {
+             entries(fmt.props)) {
           const pair = helper(fmt2, bytes2);
           value[key] = pair[0];
           bytes2 = pair[1];
@@ -64,9 +83,18 @@ module.exports = (({fromCharCode}) => {
         }
         return bytes;
 
-      } else if (fmt instanceof Struct) {
+      } else if (fmt instanceof Array) {
+        for (let n = 0; n < fmt.size; n++) {
+          const fmt2 = fmt.kind;
+          const ibytes = helper(fmt2, data[n], "");
+          console.log(data[n], btos(fmt2.size, fmt2.bigEndian, ibytes));
+          bytes += ibytes;
+        }
+        return bytes;
+      
+      } else if (fmt instanceof Object) {
         for (const [key, fmt2] of 
-          Object.entries(fmt.props)) {
+             entries(fmt.props)) {
           bytes += helper(fmt2, data[key], "");
         }
         return bytes;
@@ -91,12 +119,20 @@ module.exports = (({fromCharCode}) => {
     this.bigEndian = bigEndian;
   }
 
-  function Struct(props) {
-    if (this instanceof Struct === false) {
-      return new Struct(props);
+  function Object(props) {
+    if (this instanceof Object === false) {
+      return new Object(props);
     }
     this.props = props;
   }
 
-  return {read, write, String, Number, Struct};
-})(String);
+  function Array(size, kind) {
+    if (this instanceof Array === false) {
+      return new Array(size, kind);
+    }
+    this.size = size;
+    this.kind = kind;
+  } 
+
+  return {read, write, String, Number, Object, Array};
+})(String, Object);
