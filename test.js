@@ -18,27 +18,23 @@ const bytes = require("./index.js");
       title: "Black Hole".padEnd(10, " ")
     }
   };
-  assert.equal(bytes.write(fmt, data), 
+  assert.equal(bytes.write(fmt, data),
     "Nicolas   37 comics    Black Hole");
   assert.deepEqual(
-    bytes.read(fmt, 
-               "Nicolas   37 comics    Black Hole"), 
+    bytes.read(fmt,
+      "Nicolas   37 comics    Black Hole"),
     data);
 })();
 
 (() => {
-  const arr = [41, 42, 43, 44];
+  const arr = [41, 0xa987, 43, 44];
   const fmt = bytes.Array(
     4,
     bytes.Number(2, false, false));
   const out = bytes.write(fmt, arr);
-  //const inp = bytes.read(fmt, out);
-  const {log} = console;
-  //log(out);
-  //assert.deepEqual(inp, arr);
+  const inp = bytes.read(fmt, out);
+  assert.deepEqual(inp, arr);
 })();
-
-return;
 
 (() => {
   const fmt = bytes.Number(2, false, true);
