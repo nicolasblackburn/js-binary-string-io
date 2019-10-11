@@ -131,5 +131,9 @@ module.exports = (({ fromCharCode }, { entries }) => {
     this.type = type;
   }
 
+  function parse(fmtString) {
+
+  }
+
   return { read, write, String, Number, Object, Array, btos };
 })(String, Object);
